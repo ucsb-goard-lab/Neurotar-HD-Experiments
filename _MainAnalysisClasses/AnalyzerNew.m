@@ -183,7 +183,7 @@ classdef AnalyzerNew < handle
 			obj.direction_info = out;
 		end
 
-		function flip_score = getFlipScore(obj, tuning_curves)
+		function flip_score = calculateFlipScore(obj, tuning_curves)
 			% Calculating flip score as in Jacob et al 2016
 			if nargin < 2 || isempty(tuning_curves)
 				tuning_curves = obj.tuning_curves;

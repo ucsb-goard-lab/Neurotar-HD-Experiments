@@ -30,15 +30,28 @@ classdef FreelyMoving < ExperimentStructure
 			hd = obj.getHeading@ExperimentStructure();
 			out = hd(obj.is_moving);
 		end
-		% function out = calculateRayleighVector(obj, data)
-		% 	% Similar to previous, a little different, because the binned data should only use moving data, not all data
-		% 	if nargin < 2 || isempty(data)
-		% 		data = obj.binData(obj.getNeuralData(), obj.getHeading, true);
-		% 	end
-		% 	for c = 1:size(data, 1)
-		% 		vector_sum = obj.calculateVectorSum(data(c, :));
-		% 		out(c) = vector_sum(2); % 1st is direction, second is magnitude
-		% 	end
-		% end
+
+		function calculateHeadDirection(obj, iterations, thresh)
+			if nargin < 2 || isempty(iterations)
+				iterations = 1000;
+			end
+
+			if nargin < 3 || isempty(thresh)
+				thresh = 95;
+			end
+
+			real_rvls = obj.calculateRayleighVector();
+ 			
+			neural_data = obj.getNeuralData();
+			heading = obj.getHeading();
+			for iter = 1:iterations
+				fprintf('Iteration: %d/%d\n', iter, iterations)
+				shuffled_data = circshift(neural_data, randi(size(neural_data, 2)), 2); % circularly shift the data
+				shuffled_tc = obj.binData(shuffled_data, heading); % get shuffled tuning curves
+				obj.significance_info.rvl_shuffled(:, iter) = obj.calculateRayleighVector(shuffled_tc); % get shuffled rvl
+			end
+
+			obj.is_head_direction = real_rvls' > prctile(obj.significance_info.rvl_shuffled, thresh, 2);
+		end
 	end
 end

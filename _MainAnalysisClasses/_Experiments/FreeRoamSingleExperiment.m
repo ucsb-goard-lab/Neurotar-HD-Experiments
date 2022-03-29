@@ -6,6 +6,8 @@ classdef FreeRoamSingleExperiment < SingleCueAnalyzer & FreelyMoving
 		function obj = FreeRoamSingleExperiment(varargin)
 			obj@SingleCueAnalyzer(varargin{:});
 			obj@FreelyMoving();
+
+			obj.tuning_curves = obj.getTuningCurves();
 		end
 	end
 end

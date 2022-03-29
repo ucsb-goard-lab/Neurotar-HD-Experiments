@@ -12,5 +12,7 @@ classdef ExperimentStructure < handle
 		function out = getHeading(obj);
 			out = obj.data.get('heading');
 		end
+		function calculateHeadDirection(obj)
+		end
 	end
 end
