@@ -19,9 +19,24 @@ The following flowchart provides a graphical description of each of the classes 
 
 ![class flowchart](./flowchart.png)
 
+**Cue** and **Control** are the parent abstract classes that contain many of the key methods. **SingleCue** and **DualCue** are childen of **Cue** which either alter or expand the methods present in **Cue**. **ForcedRotation** and **FreelyMoving** do the same for **Control**. All these classe are abstract classes, and therefore are not meant to be instantiated on their own.
+Instead, the "real classes" are made of a combination of one **Cue** and one **Control**. Three examples are shown here, related to analyses performed in the associated paper. Each "Experiment" takes a different combination of **Cue** and **Control** to properly alter analyses to fit the experimental design.
+
 ### Description of methods in each class
+- **Cues**
+	- *getTuningCurves*: Returns the tuning curve for each neuron, defined as the averaged activity for each heading bin.
+	- *calculatePreferredDirection*: Returns the preferred heading (in radians) of each neuron. Has several methods for calculating each neurons preferred heading, but 'fit' is recommended.
+	- *calculateFlipScore*: Returns the flip score for each neuron (see link).
+	- *calculateTuningFits*: Fits a one or two term Gaussian (depends on the number of cues) to each neuron.
+- **Control**
+	- *getNeuralData*: Returns the timeseries of neural data for each neuron (either DFF or spikes)
+	- *getHeading*: Returns the recorded chamber orientation (heading) for the recording.
+	- *calculateHeadDirection*: Determines whether or not a neuron is heading selective or not.
+
+There are other functions present in each class, generally as helper or "checker" functions. All the main analyses are described above.
 
 ### Decoding
+
 
 ## Expanding and developing new experiments
 ### Creating new Experiments
