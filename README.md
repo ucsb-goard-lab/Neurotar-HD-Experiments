@@ -20,7 +20,7 @@ Each type of experiment is described in an "Experiment" class which inherits **o
 
 The following flowchart provides a graphical description of each of the classes and their respective methods:
 
-flowchart
+[./flowchart.png]
 
 ### Description of methods in each class
 
