@@ -1,4 +1,4 @@
-classdef AnalyzerNew < handle
+classdef Cue < handle
 	properties
 		data
 		bin_width = 6 % Default value
@@ -14,7 +14,7 @@ classdef AnalyzerNew < handle
 	end
 
 	methods % Contsructor
-		function obj = AnalyzerNew(neural_data, stimulus_data, data_type)
+		function obj = Cue(neural_data, stimulus_data, data_type)
 			if nargin < 1 || isempty(neural_data)
 				disp('Choose your neural data file...')
 				[fn, pn] = uigetfile('.mat');

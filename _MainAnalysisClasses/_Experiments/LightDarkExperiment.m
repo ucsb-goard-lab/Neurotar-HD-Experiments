@@ -1,4 +1,4 @@
-classdef LightDarkExperiment < ForcedRotation & DualCueAnalyzer
+classdef LightDarkExperiment < ControlledRotation & DualCue
     properties
         dark_data
         light_data
@@ -12,8 +12,8 @@ classdef LightDarkExperiment < ForcedRotation & DualCueAnalyzer
     
     methods
         function obj = LightDarkExperiment(varargin)
-            obj@DualCueAnalyzer(varargin{:});
-            obj@ForcedRotation();
+            obj@DualCue(varargin{:});
+            obj@ControlledRotation();
             
             obj.recording_length = length(obj.data.get('alpha'));
             
@@ -120,7 +120,7 @@ classdef LightDarkExperiment < ForcedRotation & DualCueAnalyzer
                     end
             end
             
-            out = cat(2, obj.calculateRayleighVector@DualCueAnalyzer(light_rescaled)', obj.calculateRayleighVector@DualCueAnalyzer(dark_rescaled)');
+            out = cat(2, obj.calculateRayleighVector@DualCue(light_rescaled)', obj.calculateRayleighVector@DualCue(dark_rescaled)');
             
         end
     end

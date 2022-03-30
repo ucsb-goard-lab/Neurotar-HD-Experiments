@@ -1,9 +1,9 @@
-classdef ExperimentStructure < handle
+classdef Control < handle
 	properties
 	end
 
 	methods
-		function obj = ExperimentStructure()
+		function obj = Control()
 		end
 
 		function out = getNeuralData(obj);	

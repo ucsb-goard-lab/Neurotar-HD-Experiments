@@ -36,14 +36,14 @@ Three examples are shown here, related to analyses performed in the associated p
 	- *getTuningCurves*: Returns the tuning curve for each neuron, defined as the averaged activity for each heading bin.
 	- *calculatePreferredDirection*: Returns the preferred heading (in radians) of each neuron.
 Has several methods for calculating each neurons preferred heading, but 'fit' is recommended.
-	- *calculateFlipScore*: Returns the flip score for each neuron (see link).
+	- *calculateFlipScore*: Returns the flip score for each neuron (see [Jacob et. al. 2017](https://pubmed.ncbi.nlm.nih.gov/27991898/)).
 	- *calculateTuningFits*: Fits a one or two term Gaussian (depends on the number of cues) to each neuron.
 - **Control**
 	- *getNeuralData*: Returns the timeseries of neural data for each neuron (either DFF or spikes)
 	- *getHeading*: Returns the recorded chamber orientation (heading) for the recording.
 	- *calculateHeadDirection*: Determines whether or not a neuron is heading selective or not.
 
-There are other functions present in each class, generally as helper or "checker" functions. All the main analyses are described above.
+There are other methods present in each class, generally as helper or "checker" functions. All the main analyses are described above.
 
 ### Usage
 Please see `example_usage.mat` for a guided example of how to use this toolbox.
@@ -69,4 +69,3 @@ what else?
 ## Dependencies
 - ImageRegistrationToolbox
 - 
-

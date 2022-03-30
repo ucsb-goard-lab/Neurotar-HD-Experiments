@@ -1,4 +1,4 @@
-classdef FreelyMoving < ExperimentStructure
+classdef FreelyMoving < Control
 	% Expansion of the standard Analyzer for freely moving recording
 	properties
 		is_moving
@@ -6,7 +6,7 @@ classdef FreelyMoving < ExperimentStructure
 
 	methods
 		function obj = FreelyMoving(varargin)
-			obj = obj@ExperimentStructure(varargin{:});
+			obj = obj@Control(varargin{:});
 			obj.checkIsMoving();
 		end
 
@@ -21,13 +21,13 @@ classdef FreelyMoving < ExperimentStructure
 
 		function out = getNeuralData(obj)
 			% Take only moving times
-			nd = obj.getNeuralData@ExperimentStructure();
+			nd = obj.getNeuralData@Control();
 			out = nd(:, obj.is_moving);
 		end
 
 		function out = getHeading(obj)
 			% Same as above, just for heading
-			hd = obj.getHeading@ExperimentStructure();
+			hd = obj.getHeading@Control();
 			out = hd(obj.is_moving);
 		end
 

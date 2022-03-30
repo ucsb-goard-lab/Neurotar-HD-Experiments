@@ -1,11 +1,11 @@
-classdef RemappingExperiment < ForcedRotation & SingleCueAnalyzer
+classdef RemappingExperiment < ControlledRotation & SingleCue
 	properties
 	end
 
 	methods
 		function obj = RemappingExperiment(varargin)
-			obj@SingleCueAnalyzer(varargin{:});
-			obj@ForcedRotation();
+			obj@SingleCue(varargin{:});
+			obj@ControlledRotation();
 		end
 
 		function getRecordingParameters(obj)

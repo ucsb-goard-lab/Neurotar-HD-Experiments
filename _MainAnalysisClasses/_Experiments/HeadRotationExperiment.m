@@ -1,10 +1,10 @@
-classdef HeadRotationExperiment < ForcedRotation & SingleCueAnalyzer
+classdef HeadRotationExperiment < ControlledRotation & SingleCue
 	properties
 	end
 	methods
 		function obj = HeadRotationExperiment(varargin)
-			obj@SingleCueAnalyzer(varargin{:});
-			obj@ForcedRotation();
+			obj@SingleCue(varargin{:});
+			obj@ControlledRotation();
 		end
 
 		function getRecordingParameters(obj)
