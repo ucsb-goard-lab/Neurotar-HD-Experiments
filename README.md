@@ -20,6 +20,7 @@ The following flowchart provides a graphical description of each of the classes 
 ![class flowchart](./flowchart.png)
 
 **Cue** and **Control** are the parent abstract classes that contain many of the key methods. **SingleCue** and **DualCue** are childen of **Cue** which either alter or expand the methods present in **Cue**. **ForcedRotation** and **FreelyMoving** do the same for **Control**. All these classe are abstract classes, and therefore are not meant to be instantiated on their own.
+
 Instead, the "real classes" are made of a combination of one **Cue** and one **Control**. Three examples are shown here, related to analyses performed in the associated paper. Each "Experiment" takes a different combination of **Cue** and **Control** to properly alter analyses to fit the experimental design.
 
 ### Description of methods in each class
