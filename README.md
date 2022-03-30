@@ -1,12 +1,12 @@
 # Heading Project Code
-This code was developed in conjunction with this [paper](google.com).
+This code was developed in conjunction with this [paper](https://www.biorxiv.org/content/10.1101/2022.03.25.485865v1).
 However, the code was written to create an easily expandable toolkit for processing two-photon calcium imaging data taken from a mouse on the Neurotar Mobile Home Cage system (MHC), allowing for flexible module-based analyses of a wide array of experimental set ups on the MHC.
 
 This code was written by Kevin Sit.
 
 ## Installation
-Simply clone the repository and add it to your MATLAB path.
-All necessary files are included in this repository.
+Clone this repository containing a bunch of small helper functions first: [GitHub Link](https://github.com/kevinksit/GeneralHelperCode).
+Then clone this repository and make sure both are on your MATLAB path.
 
 ## Code Structure
 ### Main Code
@@ -25,7 +25,7 @@ The following flowchart provides a graphical description of each of the classes 
 
 **Cue** and **Control** are the parent abstract classes that contain many of the key methods.
 **SingleCue** and **DualCue** are childen of **Cue** which either alter or expand the methods present in **Cue**.
-**ForcedRotation** and **FreelyMoving** do the same for **Control**.
+**ControlledRotation** and **FreelyMoving** do the same for **Control**.
 All these classes are abstract classes, and therefore are not meant to be instantiated on their own.
 
 Instead, the "real classes" are made of a combination of one **Cue** and one **Control**.
@@ -45,8 +45,8 @@ Has several methods for calculating each neurons preferred heading, but 'fit' is
 
 There are other functions present in each class, generally as helper or "checker" functions. All the main analyses are described above.
 
-### Decoding
-
+### Usage
+Please see `example_usage.mat` for a guided example of how to use this toolbox.
 
 ## Expanding and developing new experiments
 ### Creating new Experiments
@@ -65,3 +65,8 @@ Like with the Cues, make sure to inherit from the Control parent class and expan
 ## Other Helper Functions
 DataStructure
 what else?
+
+## Dependencies
+- ImageRegistrationToolbox
+- 
+
