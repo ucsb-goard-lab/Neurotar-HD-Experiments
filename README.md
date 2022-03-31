@@ -67,5 +67,5 @@ DataStructure
 what else?
 
 ## Dependencies
-- ImageRegistrationToolbox
-- 
+- Image Processing Toolbox
+- Signal Processing Toolbox 
