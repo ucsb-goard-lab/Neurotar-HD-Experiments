@@ -61,11 +61,6 @@ See SingleCue and DualCue for examples of expanded functionality on top of the b
 Controls are relatively fixed, but can be added to in case there's other highly specific control schemes.
 Like with the Cues, make sure to inherit from the Control parent class and expand functionality as desired.
 
-
-## Other Helper Functions
-DataStructure
-what else?
-
 ## Dependencies
 - Image Processing Toolbox
 - Signal Processing Toolbox 
