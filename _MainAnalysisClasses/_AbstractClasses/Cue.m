@@ -82,7 +82,7 @@ classdef Cue < handle
 		% 				% Calculate between trial CC, based on half-half splits.
 		% 				bt_CC_data(iter) = obj.getBetweenTrialCC(activity_data, randvec);
 		% 				bt_CC_rand(iter) = obj.getBetweenTrialCC(activity_rand, randvec);
-                %
+		%
 		% 				% Fitting gaussians
 		% 				tuning_rand = nanmean(activity_rand, 2);
 		% 				[fit_shuff, gof_shuff] = obj.fitGaussians(tuning_rand, gauss_flag);
@@ -136,10 +136,8 @@ classdef Cue < handle
 				method = 'vectorsum';
 				fprintf('No method provided, defaulting to vectorsum\n')
 			end
-			if nargin < 3 || isempty(gaussian_flag)
-				gaussian_flag = 'single';
-			end
-			if nargin < 4 || isempty(binned_data)
+
+			if nargin < 3 || isempty(binned_data)
 				binned_data = obj.binData(); % fold the thing
 			end
 
@@ -161,7 +159,7 @@ classdef Cue < handle
 					x = linspace(0, 2*pi, (360/obj.bin_width) + 1);
 					out = zeros(size(binned_data, 1), 2);
 					for c = 1:size(binned_data, 1)
-						[fit_func, goodness_of_fit] = obj.fitGaussians(binned_data(c, :), gaussian_flag);
+						[fit_func, goodness_of_fit] = obj.fitGaussians(binned_data(c, :));
 						[~, pref] = max(smoothdata(binned_data(c, :)));
 						switch obj.cue_flag
 							case 'single'
@@ -215,39 +213,39 @@ classdef Cue < handle
 		% 	end
 		% end
 	end
-
-	methods %things that are getting stuff, like tuning curves etc
-		function [tf, b, all_fits, all_gof] = calculateTuningFits(obj)
-			% Fitting gaussians to tuning curves
-			for c = 1:size(obj.tuning_curves, 1)
-				[fit, gof] = obj.fitGaussians(obj.tuning_curves(c, :), obj.cue_flag);
-				x = linspace(0, 2*pi, size(obj.tuning_curves, 2));
-				tf(c, :) = fit(x);
-				b(c, :) = [fit.b1, fit.b2];
-				all_fits{c} = fit;
-				all_gof{c} = gof;
-			end
-
-		end
-               	function out = calculateRayleighVector(obj, data)
-			% Similar to previous, a little different, because the binned data should only use moving data, not all data
-			if nargin < 2 || isempty(data)
-				switch obj.cue_flag
-					case 'single'
-				data = obj.binData(obj.getNeuralData(), obj.getHeading());
-					case 'double'
-						data = obj.binData(obj.getNeuralData(), obj.getHeading(), true); % fold it
-				end
-			end
-			for c = 1:size(data, 1)
-				vector_sum = obj.calculateVectorSum(data(c, :));
-				out(c) = vector_sum(2); % 1st is direction, second is magnitude
-			end
-		end
-
-		% function [tuning_curve_trials, segment] = getTrialResponses(obj, data_structure)
-		% 	% Trial by trial response, defined as a full rotation of the cage
-		% 	if nargin < 2 || isempty(data_structure)
+    
+    methods %things that are getting stuff, like tuning curves etc
+        function [tf, b, all_fits, all_gof] = calculateTuningFits(obj)
+            % Fitting gaussians to tuning curves
+            for c = 1:size(obj.tuning_curves, 1)
+                [fit, gof] = obj.fitGaussians(obj.tuning_curves(c, :), obj.cue_flag);
+                x = linspace(0, 2*pi, size(obj.tuning_curves, 2));
+                tf(c, :) = fit(x);
+                b(c, :) = [fit.b1, fit.b2];
+                all_fits{c} = fit;
+                all_gof{c} = gof;
+            end
+            
+        end
+        function out = calculateRayleighVector(obj, data)
+            % Similar to previous, a little different, because the binned data should only use moving data, not all data
+            if nargin < 2 || isempty(data)
+                switch obj.cue_flag
+                    case 'single'
+                        data = obj.binData(obj.getNeuralData(), obj.getHeading());
+                    case 'double'
+                        data = obj.binData(obj.getNeuralData(), obj.getHeading(), true); % fold it
+                end
+            end
+            for c = 1:size(data, 1)
+                vector_sum = obj.calculateVectorSum(data(c, :));
+                out(c) = vector_sum(2); % 1st is direction, second is magnitude
+            end
+        end
+        
+        % function [tuning_curve_trials, segment] = getTrialResponses(obj, data_structure)
+        % 	% Trial by trial response, defined as a full rotation of the cage
+        % 	if nargin < 2 || isempty(data_structure)
 		% 		data_structure = obj.data;
 		% 	end
                 %
@@ -343,11 +341,15 @@ classdef Cue < handle
 		% 	d        =  meanDiff / s;        % Cohen's d (for independent samples)
 		% end
 
-	
-		function [fit_out, gof_out] = fitGaussians(obj, data, rescale_flag)
+
+		function [fit_out, gof_out] = fitGaussians_old(obj, data, rescale_flag, center_flag)
 			% Fitting constrained Gaussians to the data
 			if nargin < 3 || isempty(rescale_flag)
 				rescale_flag = true;
+			end
+
+			if nargin < 3 || isempty(center_flag)
+				center_flag = false;
 			end
 
 			if size(data, 2) > size(data, 1)
@@ -357,22 +359,97 @@ classdef Cue < handle
 			x = linspace(0, 2*pi, size(data, 1));
 			if rescale_flag
 				data = rescale(data);
-			end
+            end
+            
+			center_idx = round(length(data)/4);
+			if center_flag
 			% First center the data so that the peak doesn't end up near the ends
 			[~, max_idx] = max(smoothdata(data));
-			centered_resp = circshift(data, round(length(data)/4) - max_idx);
+			centered_resp = circshift(data, center_idx - max_idx);
+			else
+			centered_resp = data;
+			end
 			centered_resp(isnan(centered_resp)) = 0;
-
 			wiggle = pi/6;
 			switch obj.cue_flag
 				case 'double'
 					% double gauss fit
-					fit_func = fittype('a0+a1*exp(-((x-b1)/c1)^2) + a2*exp(-((x-b2)/c2)^2)');
-
+					fit_func = fittype('a0 + a1*exp(-((x-b1)/c1)^2) + a2*exp(-((x-b2)/c2)^2)');
 					wiggle = pi/12;
-					initial_param = [0, 0.5, 0.5, pi/2, 3*pi/2, pi/6, pi/6];                     % initial parameters: [a0 a1 b1 c1]
-					upper_bounds = [1, 1, 1, pi/2 + wiggle, 3*pi/2 + wiggle, 2*pi, 2*pi]; % set constraints
+					% Let's set some real parameters here, I think that'll help...
+					a0 = min(centered_resp);
+					a1 = mean(centered_resp(center_idx-2:center_idx+2));
+					a2 = mean(centered_resp(center_idx + length(data)/2 - 2 : center_idx + length(data)/2 + 2));
+					b1 = pi/2;
+					b2 = 3*pi/2;
+					c1 = pi/6;
+					c2 = pi/6;
+					initial_param = [a0, a1, a2, b1, b2, c1, c2];                     % initial parameters: [a0 a1 b1 c1]
+					% upper_bounds = [0.2, 1, 1, pi/2, 3*pi/2 + wiggle, Inf, Inf];
+					upper_bounds = [1, 1, 1, pi/2 + wiggle, 3*pi/2 + wiggle, 2*pi, 2*pi]; % updated upper bounds 13Jul2022
 					lower_bounds = [0, 0, 0, pi/2 - wiggle, 3*pi/2 - wiggle, 0, 0];
+					[double_gauss, double_gof] = fit(x', centered_resp, fit_func, 'StartPoint', initial_param, 'Upper', upper_bounds, 'Lower', lower_bounds);
+					fit_out = double_gauss; 
+					gof_out = double_gof;
+				case 'single'
+					% single gauss fit
+					fit_func = fittype('a0+a1*exp(-((x-b1)/c1)^2)'); % define function: gaussian w/ baseline
+					initial_param = [0, 0.5, pi/2, pi/6];                     % initial parameters: [a0 a1 b1 c1]
+					upper_bounds = [1, 1, pi/2 + wiggle, pi/2];
+					lower_bounds = [0, 0, pi/2 - wiggle, 0];
+					[single_gauss, single_gof] = fit(x', centered_resp, fit_func, 'StartPoint', initial_param, 'Upper', upper_bounds, 'Lower', lower_bounds);
+					fit_out = single_gauss; 
+					gof_out = single_gof;
+			end
+			% Don't forget at this point that the location of the peak (c) is wrt the shifted location, so you'll need to unshift it later
+		end
+		function [fit_out, gof_out] = fitGaussians(obj, data, rescale_flag, center_flag)
+			% Fitting constrained Gaussians to the data
+			if nargin < 3 || isempty(rescale_flag)
+				rescale_flag = true;
+			end
+
+			if nargin < 4 || isempty(center_flag)
+				center_flag = false;
+			end
+
+			if size(data, 2) > size(data, 1)
+				data = transpose(data); % ensure column vector
+			end
+
+			x = linspace(0, 2*pi, size(data, 1));
+			if rescale_flag
+				data = rescale(data);
+            end
+            
+			center_idx = round(length(data)/4);
+			if center_flag
+			% First center the data so that the peak doesn't end up near the ends
+			[~, max_idx] = max(smoothdata(data));
+			centered_resp = circshift(data, center_idx - max_idx);
+			else
+			centered_resp = data;
+			end
+			centered_resp(isnan(centered_resp)) = 0;
+			wiggle = pi/6;
+			switch obj.cue_flag
+				case 'double'
+					% double gauss fit
+					fit_func = fittype('a0 + a1*exp(-((x-b1)/c1)^2) + a2*exp(-((x-b2)/c2)^2)');
+					wiggle = pi/12;
+					% Let's set some real parameters here, I think that'll help...
+					a0 = min(centered_resp);
+					a1 = mean(centered_resp(center_idx-2:center_idx+2));
+					a2 = mean(centered_resp(center_idx + length(data)/2 - 2 : center_idx + length(data)/2 + 2));
+					b1 = pi/2;
+					b2 = 3*pi/2;
+					c1 = pi/6;
+					c2 = pi/6;
+					initial_param = [a0, a1, a2, b1, b2, c1, c2];                     % initial parameters: [a0 a1 b1 c1]
+					% upper_bounds = [0.2, 1, 1, pi/2, 3*pi/2 + wiggle, Inf, Inf];
+					upper_bounds = [0.2, 1, 1, pi/2 + wiggle/2, 3*pi/2 + wiggle/2, 2*pi, 2*pi]; % updated upper bounds 13Jul2022
+					% upper_bounds = [0.2, 1, 1, pi/2 + wiggle/2, 3*pi/2 + wiggle/2, pi/2, pi/2]; % updated upper bounds 13Jul2022
+					lower_bounds = [0, 0, 0, pi/2 - wiggle/2, 3*pi/2 - wiggle/2, 0, 0];
 					[double_gauss, double_gof] = fit(x', centered_resp, fit_func, 'StartPoint', initial_param, 'Upper', upper_bounds, 'Lower', lower_bounds);
 					fit_out = double_gauss; 
 					gof_out = double_gof;

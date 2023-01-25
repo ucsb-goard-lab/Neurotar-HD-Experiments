@@ -34,40 +34,66 @@ classdef LightDarkExperiment < ControlledRotation & DualCue
             error('LightDarkExperiment is an abstract class and shouldn''t be run on its own')
         end
         
-        	function [tf, b, all_fits] = calculateTuningFits(obj)
-			all_tuning = cat(2, obj.light_tuning, obj.dark_tuning);
-			rescaled = rowrescale(all_tuning);
-			all_tuning = reshape(rescaled, size(obj.light_tuning, 1), size(obj.light_tuning, 2), []);
-			light_tuning = all_tuning(:, :, 1);
-			dark_tuning = all_tuning(:, :, 2);
-				for c = 1:size(obj.tuning_curves, 1)
-				[fit_l] = obj.fitGaussians(light_tuning(c, :), false);
-				[fit_d] = obj.fitGaussians(dark_tuning(c, :), false);
+	    function [tf, b, all_fits, gof] = calculateTuningFits2(obj)
+		light_trial_resp = obj.getTrialResponses(obj.light_data);
+		dark_trial_resp = obj.getTrialResponses(obj.dark_data);
+		aligned_responses = leaveOneOutAligner({light_trial_resp, dark_trial_resp});
+		light_aligned = nanmean(aligned_responses{1}, 3);
+		dark_aligned = nanmean(aligned_responses{2}, 3);
+		all_tuning = cat(2, light_aligned, dark_aligned);
+		rescaled = rowrescale(all_tuning);
+		all_tuning = reshape(rescaled, size(obj.light_tuning, 1), size(obj.light_tuning, 2), []);
+		light_tuning = all_tuning(:, :, 1);
+		dark_tuning = all_tuning(:, :, 2);
+		for c = 1:size(obj.tuning_curves, 1)
+			% 		    if obj.is_head_direction(c)
+			% 			    keyboard
+			% 		    end
+			[fit_l, gof_l] = obj.fitGaussians(light_tuning(c, :));
+			[fit_d, gof_d] = obj.fitGaussians(dark_tuning(c, :));
 
-				x = linspace(0, 2*pi, size(obj.tuning_curves, 2));
-				tf(c, :) = fit_l(x);
-				b(c, :) = [fit_l.b1, fit_l.b2];
-				all_fits{c} = {fit_l, fit_d};
-			end
-
+			x = linspace(0, 2*pi, size(obj.tuning_curves, 2));
+			tf(c, :) = fit_l(x);
+			b(c, :) = [fit_l.b1, fit_l.b2];
+			all_fits{c} = {fit_l, fit_d};
+			gof{c} = {gof_l, gof_d};
 		end
+	    end
 
-        function [light_tuning, dark_tuning] = getConditionTuningCurves(obj)
-            for r = 1:obj.n_repeats
-                l_spikes = obj.light_data(r).get(obj.data_type);
-                l_heading = obj.light_data(r).get('heading');
-                d_spikes = obj.dark_data(r).get(obj.data_type);
-                d_heading = obj.dark_data(r).get('heading');
-                light_tuning(:, :, r) = obj.binData(l_spikes, l_heading);
-                dark_tuning(:, :, r) = obj.binData(d_spikes, d_heading); % used to be 1:200, changed
-            end
+	    function [tf, b, all_fits, gof] = calculateTuningFits(obj)
+		    all_tuning = cat(2, obj.light_tuning, obj.dark_tuning);
+		    rescaled = rowrescale(all_tuning);
+		    all_tuning = reshape(rescaled, size(obj.light_tuning, 1), size(obj.light_tuning, 2), []);
+		    light_tuning = all_tuning(:, :, 1);
+		    dark_tuning = all_tuning(:, :, 2);
+		    for c = 1:size(obj.tuning_curves, 1)
+			    [fit_l, gof_l] = obj.fitGaussians_old(light_tuning(c, :), true, true); % center and rescale
+			    [fit_d, gof_d] = obj.fitGaussians_old(dark_tuning(c, :), true, true);
+
+			    x = linspace(0, 2*pi, size(obj.tuning_curves, 2));
+			    tf(c, :) = fit_l(x);
+			    b(c, :) = [fit_l.b1, fit_l.b2];
+			    all_fits{c} = {fit_l, fit_d};
+			    gof{c} = {gof_l, gof_d};
+		    end
+	    end
+
+	    function [light_tuning, dark_tuning] = getConditionTuningCurves(obj)
+		    for r = 1:obj.n_repeats
+			    l_spikes = obj.light_data(r).get(obj.data_type);
+			    l_heading = obj.light_data(r).get('heading');
+			    d_spikes = obj.dark_data(r).get(obj.data_type);
+			    d_heading = obj.dark_data(r).get('heading');
+			    light_tuning(:, :, r) = obj.binData(l_spikes, l_heading);
+			    dark_tuning(:, :, r) = obj.binData(d_spikes, d_heading); % used to be 1:200, changed
+		    end
             light_tuning = nanmean(light_tuning, 3);
             dark_tuning = nanmean(dark_tuning, 3);
         end
         
-        function [flip_score_l, flip_score_d] = getFlipScore(obj)
-            flip_score_l = obj.getFlipScore@Analyzer(obj.light_tuning);
-            flip_score_d = obj.getFlipScore@Analyzer(obj.dark_tuning);
+        function [flip_score_l, flip_score_d] = calculateFlipScore(obj)
+            flip_score_l = obj.calculateFlipScore@DualCue(obj.light_tuning);
+            flip_score_d = obj.calculateFlipScore@DualCue(obj.dark_tuning);
         end
         function [out]  = calculateRayleighVector(obj, rescale_method)
             if nargin < 2 || isempty(rescale_method)

@@ -16,6 +16,11 @@ classdef RSCSomaDualExperiment < LightDarkExperiment
 				case 7550
 					obj.segment_length = 1250;
 					obj.n_repeats = 3;
+                case 15050
+                    obj.segment_length = 1250;
+                    obj.n_repeats = 6;
+				otherwise
+					error("Unrecognized recording length")
 			end
 		end
 	end

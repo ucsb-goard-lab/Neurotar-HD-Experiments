@@ -30,10 +30,43 @@ classdef FreelyMoving < Control
 			hd = obj.getHeading@Control();
 			out = hd(obj.is_moving);
 		end
+		function out = distanceBin(obj)
+			n_distances = 2;
+			% get distance first?
+			% x = obj.data.get('X');
+			% y = obj.data.get('Y');
+			% x = x(obj.is_moving);
+			% y = y(obj.is_moving);
+			% distance = sqrt(x.^2 + y.^2);
+			distance = obj.data.get('r');
+			distance = distance(obj.is_moving);	
+			min_dist = 0;
+			max_dist = 120;
+			bin_distance = discretize(distance, [0, 60]);%linspace(min_dist, max_dist, n_distances + 1));
+			data = obj.getNeuralData();
+			heading = obj.getHeading();
+
+			out = zeros(size(data, 1), length(-180:obj.bin_width:180) - 1, n_distances);
+			for d = 1:n_distances
+				current_data = data(:, bin_distance == d);
+				current_heading = heading(bin_distance == d);
+				out(:, :, d) = obj.binData(current_data, current_heading);
+			end
+		end
+
+
+		% 		function out = getHeading(obj)
+		% 			% calculated as a function of proximity to center (for some reviewer stuff)
+		% 			x = obj.data.get('X');
+		% 			y = obj.data.get('Y');
+		% 			dist = sqrt(x.^2 + y.^2);
+		%             dist = (rescale(dist) * 360) - 180;
+		% 			out = dist(obj.is_moving);
+		% 		end
 
 		function calculateHeadDirection(obj, iterations, thresh)
 			if nargin < 2 || isempty(iterations)
-				iterations = 1000;
+				iterations = 100;
 			end
 
 			if nargin < 3 || isempty(thresh)
@@ -41,7 +74,7 @@ classdef FreelyMoving < Control
 			end
 
 			real_rvls = obj.calculateRayleighVector();
- 			
+
 			neural_data = obj.getNeuralData();
 			heading = obj.getHeading();
 			for iter = 1:iterations

@@ -6,13 +6,28 @@ classdef ControlledRotation < Control
         function obj = ControlledRotation()
             obj = obj@Control();
         end
-        function is_hd = calculateHeadDirection(obj, iterations)
+        function is_hd = calculateHeadDirection(obj, iterations, condition_flag)
             % To determine which cells are heading selective
-            tuning_curve_trials = obj.getTrialResponses();
             
             if nargin < 2 || isempty(iterations)
                 iterations = 100; % this is set low in case you accidentally call it, actually 1000 iterations for real data
             end
+            
+		if nargin < 3 || isempty(condition_flag)
+			condition_flag = 'all';
+        end
+        
+	switch condition_flag
+		case 'light'
+			fprintf('Light curves only\n');
+			tuning_curve_trials = obj.getTrialResponses(obj.light_data);
+		case 'dark'
+			fprintf('Dark curves only\n');
+			tuning_curve_trials = obj.getTrialResponses(obj.dark_data);
+		case 'all'
+            tuning_curve_trials = obj.getTrialResponses();
+	end
+            obj.significance_info = [];
             
             if ndims(tuning_curve_trials) < 3
                 % Some low quality recordings have very few trials, those are just skipped and not included
@@ -184,7 +199,7 @@ classdef ControlledRotation < Control
             
             % Find times when the cage is stopped (rest periods)
             slow_move = find(abs(diff(heading)) < 0.5);
-            n = 10; % 10 or more stopped frames
+            n = 20; % 10 or more stopped frames
             x = diff(slow_move') == 1;
             f = find([false, x] ~= [x, false]);
             g = find(f(2:2:end) - f(1:2:end-1) > n);
